@@ -94,8 +94,9 @@ namespace SGE.Controllers
                     return RedirectToAction("AcessoNegado", "Home");
                 }
             }
+            Guid idTipo = _context.TiposUsuario.Where(a => a.Tipo == "Aluno").FirstOrDefault().TipoUsuarioId;
 
-            ViewData["TipoUsuarioId"] = new SelectList(_context.TiposUsuario, "TipoUsuarioId", "TipoUsuarioNome");
+            ViewData["TipoUsuarioId"] = new SelectList(_context.TiposUsuario, "TipoUsuarioId", "TipoUsuarioId");
             return View();
         }
 
@@ -104,7 +105,8 @@ namespace SGE.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("AlunoId,Matricula,AlunoNome,Email,Celular,Logradouro,Numero,Cidade,Estado,CEP,Senha,DataNascimento,CadAtivo,DataCadastro,CadInativo,TipoUsuarioId,UrlFoto")] Aluno aluno, string ConfirmeSenha, IFormFile UrlFoto)
+        public async Task<IActionResult> Create([Bind("AlunoId,Matricula,AlunoNome,Email,Celular,Logradouro," +
+            "Numero,Cidade,Estado,CEP,Senha,DataNascimento,CadAtivo,DataCadastro,CadInativo,TipoUsuarioId,UrlFoto")] Aluno aluno, string ConfirmeSenha, IFormFile UrlFoto)
         {
 
             if (ModelState.IsValid)
@@ -137,6 +139,14 @@ namespace SGE.Controllers
                     }
                     aluno.UrlFoto = newFileName; // Atualiza o campo UrlFoto com o novo nome do arquivo
                 }
+
+                aluno.CadAtivo = true;
+                aluno.DataCadastro = DateTime.Now;
+                TipoUsuario tipoUsuario = _context.TiposUsuario.Where(a => a.Tipo == "Aluno").FirstOrDefault();
+                aluno.TipoUsuarioId = tipoUsuario.TipoUsuarioId;
+                aluno.TipoUsuario = tipoUsuario;
+
+
                 _context.Add(aluno);
                 await _context.SaveChangesAsync();
                 Usuario usuario = new Usuario();
@@ -153,7 +163,9 @@ namespace SGE.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["TipoUsuarioId"] = new SelectList(_context.TiposUsuario, "TipoUsuarioId", "TipoUsuarioId", aluno.TipoUsuarioId);
+            Guid idTipo = _context.TiposUsuario.Where(a => a.Tipo == "Aluno").FirstOrDefault().TipoUsuarioId;
+
+            ViewData["TipoUsuarioId"] = new SelectList(_context.TiposUsuario, "TipoUsuarioId", "TipoUsuarioId");
             return View(aluno);
         }
 
